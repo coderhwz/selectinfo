@@ -11,25 +11,32 @@
 			pageSize:10,
 		};
 
-		//合并
+		//合并输入的参数与默认的参数
 		this.opts = $.extend(this.opts,options,{});
+		console.log(this.opts);
 		this.init();
 	}
 	select3.prototype={
 		init:function(){
+			// 如果启用缓存则开启缓存
 			if(this.opts.cache){
 				this.initCache();
 			}
-			this.input = $('<input type="text" name="'+this.opts.inputName+'"/>');
+			// 文本框用于表单提交
+			this.input = $('<input type="'+this.opts.inputType+'" name="'+this.opts.inputName+'"/>');
 			this.input.appendTo(this.wrapper);
+			// 两个按钮
 			this.nextBtn = $('<button type="button" class="btn btn-default">下一页</button>');
 			this.preBtn = $('<button type="button" class="btn btn-default">上一页</button>')
 
+			// 没有选中值
 			if(this.opts.selected < 1){
 				this.box = $('<a href="javascript:;" class="form-control">'+ this.opts.placeholder + '</a>');
 			}else{
+				this.box = $('<a href="javascript:;" class="form-control">'+ this.opts.placeholder + '</a>');
 				this.input.val(this.opts.selected);
 			}
+			// 添加选择按钮
 			this.box.appendTo(this.wrapper);
 			this.container = $('<div class="container" style="display:none;" />');
 			this.container.appendTo(this.wrapper);
@@ -96,7 +103,6 @@
 			if (!this.cache['data'][key]) {
 				return false;
 			};
-			console.log('cache page',( page-1 )*size,size);
 			var offset = ( page-1 )*size;
 			return this.cache['data'][key].slice(offset,offset+size);
 
@@ -132,7 +138,7 @@
 			});
 			$(document).click(function(event){
 				var target = $(event.target);
-				var parent = target.parents(_this.wrapper.selector);
+				var parent = target.parents('#select');
 				if (!parent.length) {
 					_this.container.hide();
 				}; 
@@ -154,9 +160,7 @@
 
 		getItems:function(alpha,page,size,callback){
 			var cached = this.getCache(alpha,page,size);
-			console.log('cache data ', cached);
 			var _this = this;
-			console.log('page:',page);
 			if (cached.length > 1) {
 				callback(cached);
 				_this.opts.curPage = page;
@@ -164,8 +168,10 @@
 			}else{
 				$.getJSON(this.opts.apiUrl,{type:"brands",alpha:alpha,page:page,size:size},function(data){
 					callback(data);
-					_this.opts.curPage = page;
+					if(data.length > 0)
+						_this.opts.curPage = page;
 					_this.setCache(alpha,data);
+					console.debug('data from ajax');
 				});
 			};
 		},
@@ -188,9 +194,15 @@
 
 $(document).ready(function(){
 	$('#select').select3({
-		a:'b',
+		show:'d',
 		apiUrl:'/select/app/api.php',
-		pageSize:2
+		pageSize:3,
+		curPage:1,
+		placeholder:"..请选择..",
+		cache:true,
+		inputType:'hidden',
+		inputName:'brand'
+
 		// cache:true,
 	});
 });
